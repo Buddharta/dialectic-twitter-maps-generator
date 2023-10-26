@@ -1,14 +1,10 @@
 from pymongo import MongoClient
 from datetime import datetime,  timedelta
 from urllib.parse import quote_plus
-#import pandas as pd
-import re
-import requests
-import json
 import csv
 import os
-import datetime
-import unicodedata
+import pymongo
+#import unicodedata
 import logging
 import time
 import functools
@@ -112,7 +108,7 @@ def write_csv_data(csv_file_path, data):
 for term in conceptos['retrete']:
     query=make_query(term)
     tweets = perform_mongo_query(query)
-    filename = 'mongodb-' + term + '.csv'
+    filename = f"mongodb-{term}.csv"
     csv_file = os.path.join(datadir, filename)
     write_csv_data(csv_file, tweets)
     tweets.close()
