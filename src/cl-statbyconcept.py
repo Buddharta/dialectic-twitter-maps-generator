@@ -1,0 +1,142 @@
+import csv
+import os
+import argparse
+import pandas as pd
+
+estados=["Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas", "Chihuahua", "Ciudad de México", "Coahuila de Zaragoza", "Colima", "Durango", "México", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco", "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas"]
+conceptos={
+    'esquite':['esquite', 'trolelote', 'chasca', 'chaska', 'elote en vaso', 'vasolote', 'elote feliz', 'coctel de elote', 'elote desgranado'], 
+    'bolillo':['bolillo', 'birote'], 
+    'migaja':['migaja', 'borona', 'morona', 'morusa'], 
+    'queso Oaxaca':['queso Oaxaca', 'quesillo', 'queso de hebra'], 
+    'hormiga':['hormiga', 'asquel', 'asquiline', 'esquiline'], 
+    'mosquito':['mosquito', 'zancudo', 'chaquiste', 'chanquiste', 'moyote'], 
+    'pavo':['pavo', 'guajolote', 'totole', 'totol', 'chompipe'], 
+    'colibrí':['colibrí', 'chupamirto', 'chuparrosa', 'chupaflor'], 
+    'automóvil':['coche', 'automóvil', 'carro', 'auto'], 
+    'aguacero':['aguacero', 'chubasco', 'tormenta'], 
+    'habitación':['habitación', 'alcoba', 'dormitorio', 'recámara'], 
+    'cobija':['cobija', 'frazada'], 
+    'lentes':['lentes', 'anteojo', 'gafas', 'espejuelos'], 
+    'itacate':['itacate', 'lunch', 'lonche', 'bastimento'], 
+    'rasguño':['rasguño', 'arañazo'], 
+    'lagaña':['legaña', 'lagaña', 'chinguiña'], 
+    'comezón':['comezón', 'picazón', 'rasquera', 'rasquiña'],  
+    'cinturón':['cinturón', 'cinto', 'fajo'],  #(bucar fajo con opción “sin billetes” en la expresión regular)
+    'retrete':['retrete', 'excusado', 'sanitario', 'inodoro', 'escusado', 'WC'], 
+    'brasier':['brasier', 'brassier', 'chichero']  
+}
+
+cwd=os.getcwd()
+datadir=os.path.join(cwd,'data')
+outdir=os.path.join(cwd,'outputs')
+gabmap_file_data=os.path.join(cwd,'outputs/gabmapdata.csv')
+datafiles=os.listdir(datadir)
+
+def get_location_data(file) -> dict:
+    df = pd.read_csv(file,dtype={"Estado": str,"Poblacion": int,})
+    apariciones=dict.fromkeys(estados,0)
+    total=len(list(df["Estado"]))
+    apariciones['Total']=total
+    for item in df["Estado"]:
+        apariciones[item]+=1
+    return apariciones
+
+def create_csv_file(concept :str):
+    new_file_name=f"{concept}.csv"
+    new_csv_file_path=os.path.join(outdir, new_file_name)
+    with open(new_csv_file_path, "a", newline="", encoding='utf-8') as outfile:
+        writer = csv.writer(outfile)
+        if outfile.tell() == 0: # If the file is empty,  write the header row
+            write_data=dict.fromkeys(estados,[])
+            write_data['Total']=[]
+            header=["Estado"]
+            header.extend(conceptos[concept])
+            print(header)
+            #writer.writerow(header.extend(conceptos[concept]))
+            for palabra in conceptos[concept]:
+                file_path=os.path.join("data",f"db-{palabra}-fixed.csv")
+                print(f"Processing {file_path} data...")
+                data_by_concept=get_location_data(file_path)
+                for key in data_by_concept:
+                    write_data[key].append(data_by_concept[key])
+                    print(write_data)
+                write_data['Total'].append(data_by_concept['Total'])
+
+            for estado in estados:
+                row_data=[estado]
+                row_data.extend(write_data[estado])
+                #writer.writerow(row_data.extend(write_data[estado]))
+        else:
+            print(f"File {concept}.csv already written")
+
+gabmap=True
+parser=argparse.ArgumentParser(description='Make the conceptos.csv file from the fetched database files')
+parser.add_argument('concepto',metavar='concept',type=str)
+parser.add_argument('--gabmap',dest='gabmap',action='store_const',
+                    const=gabmap, default=False,
+                    help='Make the corresponding file to be processed by gabmap')
+parser.parse_args(['-'])
+cl_argument=parser.parse_args()
+concept=cl_argument.concepto
+if (concept in conceptos):
+    print(f"creating{concept}.csv file...")
+    create_csv_file(concept)
+else:
+    print(f"""Sorry concept '{concept}' not in list.""")
+
+##def get_places():
+##    places=set()
+##    for file in datafiles:
+##        filepath=os.path.join(datadir,file)
+##        with open(filepath,'r') as fl:
+##            csv_reader=csv.DictReader(fl)
+##            for row in csv_reader:
+##                places.add(row['Locacion'])
+##    return list(places)
+##lugares=get_places()
+##
+##
+##with open(outfile, "w", newline="",encoding='utf-8') as csvfile:
+##    writer = csv.writer(csvfile)
+##    if csvfile.tell() == 0:
+##        # If the file is empty, write the header row
+##        keys=['Palabra','Total de ocurrencias']
+##        keys.extend(lugares)
+##        writer.writerow(keys)
+##
+##    for file in datafiles:
+##        ocurrencias={lugar:0 for lugar in lugares}
+##        palabra=file[0:-4]
+##        filepath=os.path.join(datadir,file)
+##        with open(filepath,'r') as fl:
+##            csv_reader=csv.DictReader(fl)
+##            for row in csv_reader:
+##                ocurrencias[row['Locacion']]+=1
+##
+##            valores=list(ocurrencias.values())
+##            totales=sum(valores)
+##            data=[palabra,totales]
+##            data.extend(valores)
+##            writer.writerow(data)
+##
+##
+##with open(outdata, "w", newline="",encoding='utf-8') as csvfile:
+##    writer = csv.writer(csvfile)
+##    if csvfile.tell() == 0:
+##        # If the file is empty, write the header row
+##        keys=['Locacion','Retrete']
+##        writer.writerow(keys)
+##
+##    with open(outfile,'r') as file:
+##        csv_reader=csv.DictReader(file)
+##        variantes={lugar:'' for lugar in lugares}
+##        for row in csv_reader:
+##            for lugar in lugares:
+##                if int(row[lugar]) > 0:
+##                    variantes[lugar]+=row['Palabra'] + " / "
+##        for lugar in lugares:
+##            data=[lugar,variantes[lugar][:-3]]
+##            writer.writerow(data)
+##
+
