@@ -1,3 +1,4 @@
+import itertools
 import csv
 import os
 import argparse
@@ -42,31 +43,45 @@ def get_location_data(file) -> dict:
         apariciones[item]+=1
     return apariciones
 
-def create_csv_file(concept :str):
+def create_csv_files(concept :str):
+    for palabra in conceptos[concept]:
+        concept_fname=f"{palabra}-map.csv"
+        concept_file=os.path.join(outdir,concept_fname)
+        with open(concept_file, "a", newline="", encoding='utf-8') as wordfile:
+            if wordfile.tell() == 0:
+                dbfile_path=os.path.join("data",f"db-{palabra}-fixed.csv")
+                print(f"Writing {dbfile_path}.csv file...")
+                data_by_concept=get_location_data(dbfile_path)
+                writer = csv.writer(wordfile)
+                writer.writerow(['Estado','Ocurrencias'])
+                for value in data_by_concept.items():
+                    writer.writerow(list(value))
+            else:
+                print(f"File {concept_file} already written, skiping...")
+                pass
     new_file_name=f"{concept}.csv"
     new_csv_file_path=os.path.join(outdir, new_file_name)
     with open(new_csv_file_path, "a", newline="", encoding='utf-8') as outfile:
         writer = csv.writer(outfile)
         if outfile.tell() == 0: # If the file is empty,  write the header row
-            write_data=dict.fromkeys(estados,[])
-            write_data['Total']=[]
+            write_data=[]
             header=["Estado"]
             header.extend(conceptos[concept])
-            print(header)
-            #writer.writerow(header.extend(conceptos[concept]))
+            writer.writerow(header)
             for palabra in conceptos[concept]:
                 file_path=os.path.join("data",f"db-{palabra}-fixed.csv")
                 print(f"Processing {file_path} data...")
                 data_by_concept=get_location_data(file_path)
-                for key in data_by_concept:
-                    write_data[key].append(data_by_concept[key])
-                    print(write_data)
-                write_data['Total'].append(data_by_concept['Total'])
-
+                write_data.append(data_by_concept)
             for estado in estados:
                 row_data=[estado]
-                row_data.extend(write_data[estado])
-                #writer.writerow(row_data.extend(write_data[estado]))
+                ocurrence_data=[d[estado] for d in write_data]
+                row_data.extend(ocurrence_data)
+                writer.writerow(row_data)
+            final=['Total']
+            totales=[d['Total'] for d in write_data]
+            final.extend(totales)
+            writer.writerow(final)
         else:
             print(f"File {concept}.csv already written")
 
@@ -80,8 +95,7 @@ parser.parse_args(['-'])
 cl_argument=parser.parse_args()
 concept=cl_argument.concepto
 if (concept in conceptos):
-    print(f"creating{concept}.csv file...")
-    create_csv_file(concept)
+    create_csv_files(concept)
 else:
     print(f"""Sorry concept '{concept}' not in list.""")
 
