@@ -1,9 +1,9 @@
-import itertools
 import csv
 import os
 import argparse
 import pandas as pd
 
+corr_estados={"Coahuila de Zaragoza":"Coahuila", "México" : "Estado de México", "Michoacán de Ocampo" : "Michoacán", "Veracruz de Ignacio de la Llave":"Veracruz"}
 estados=["Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas", "Chihuahua", "Ciudad de México", "Coahuila de Zaragoza", "Colima", "Durango", "México", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco", "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas"]
 conceptos={
     'esquite':['esquite', 'trolelote', 'chasca', 'chaska', 'elote en vaso', 'vasolote', 'elote feliz', 'coctel de elote', 'elote desgranado'], 
@@ -55,7 +55,11 @@ def create_csv_files(concept :str):
                 writer = csv.writer(wordfile)
                 writer.writerow(['Estado','Ocurrencias'])
                 for value in data_by_concept.items():
-                    writer.writerow(list(value))
+                    if value[0] in corr_estados.keys():
+                        correctos=[corr_estados[value[0]],value[1]]
+                        writer.writerow(correctos)
+                    else:
+                        writer.writerow(list(value))
             else:
                 print(f"File {concept_file} already written, skiping...")
                 pass
