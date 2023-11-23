@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import csv
 import os
 import argparse
@@ -28,11 +29,8 @@ conceptos={
     'brasier':['brasier', 'brassier', 'chichero']  
 }
 
-cwd=os.getcwd()
-datadir=os.path.join(cwd,'data')
-outdir=os.path.join(cwd,'outputs')
-gabmap_file_data=os.path.join(cwd,'outputs/gabmapdata.csv')
-datafiles=os.listdir(datadir)
+DATA_DIR="/home/shakya/source/PYTHON/tweet-scrape/data"
+OUT_DIR="/home/shakya/source/PYTHON/tweet-scrape/outputs"
 
 def get_location_data(file) -> dict:
     df = pd.read_csv(file,dtype={"Estado": str,"Poblacion": int,})
@@ -46,11 +44,11 @@ def get_location_data(file) -> dict:
 def create_csv_files(concept :str):
     for palabra in conceptos[concept]:
         concept_fname=f"{palabra}-map.csv"
-        concept_file=os.path.join(outdir,concept_fname)
+        concept_file=os.path.join(OUT_DIR,concept_fname)
         with open(concept_file, "a", newline="", encoding='utf-8') as wordfile:
             if wordfile.tell() == 0:
-                dbfile_path=os.path.join("data",f"db-{palabra}-fixed.csv")
-                print(f"Writing {dbfile_path}.csv file...")
+                dbfile_path=os.path.join(DATA_DIR,f"{concept}/db-{palabra}-fixed.csv")
+                print(f"Writing {concept_fname}.csv file...")
                 data_by_concept=get_location_data(dbfile_path)
                 writer = csv.writer(wordfile)
                 writer.writerow(['Estado','Ocurrencias'])
@@ -64,7 +62,7 @@ def create_csv_files(concept :str):
                 print(f"File {concept_file} already written, skiping...")
                 pass
     new_file_name=f"{concept}.csv"
-    new_csv_file_path=os.path.join(outdir, new_file_name)
+    new_csv_file_path=os.path.join(OUT_DIR, new_file_name)
     with open(new_csv_file_path, "a", newline="", encoding='utf-8') as outfile:
         writer = csv.writer(outfile)
         if outfile.tell() == 0: # If the file is empty,  write the header row
@@ -73,7 +71,7 @@ def create_csv_files(concept :str):
             header.extend(conceptos[concept])
             writer.writerow(header)
             for palabra in conceptos[concept]:
-                file_path=os.path.join("data",f"db-{palabra}-fixed.csv")
+                file_path=os.path.join(DATA_DIR,f"{concept}/db-{palabra}-fixed.csv")
                 print(f"Processing {file_path} data...")
                 data_by_concept=get_location_data(file_path)
                 write_data.append(data_by_concept)
@@ -98,6 +96,7 @@ parser.add_argument('--gabmap',dest='gabmap',action='store_const',
 parser.parse_args(['-'])
 cl_argument=parser.parse_args()
 concept=cl_argument.concepto
+gabmap_file_data=os.path.join(OUT_DIR,f'outputs/{concept}-gabmapdata.csv')
 if (concept in conceptos):
     create_csv_files(concept)
 else:

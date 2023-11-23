@@ -1,27 +1,26 @@
+#!/usr/bin/python3
 from pymongo import MongoClient
 from datetime import datetime,  timedelta
 from urllib.parse import quote_plus
 import csv
 import os
 import pymongo
-#import unicodedata
 import logging
 import time
 import functools
+import argparse
 
 MONGO_DB = 'twitterdb'
 MONGO_HOST = '132.247.22.53'
 MONGO_USER = 'ConsultaTwitter'
 MONGO_PASS = '$Con$ulT@C0V1D'
 MONGO_MECHANISM = 'SCRAM-SHA-256'
-uri = f'mongodb://{quote_plus(MONGO_USER)}:{quote_plus(MONGO_PASS)}@{MONGO_HOST}/{MONGO_DB}'
+MAX_AUTO_RECONNECT_ATTEMPTS = 5
 
+uri = f'mongodb://{quote_plus(MONGO_USER)}:{quote_plus(MONGO_PASS)}@{MONGO_HOST}/{MONGO_DB}'
 client = MongoClient(uri, socketTimeoutMS=90000000)
 db = client.twitterdb
 collection = db.tweetsMexico
-
-cwd=os.getcwd()
-datadir=os.path.join(cwd, 'data')
 
 conceptos={
     'esquite':['esquite', 'trolelote', 'chasca', 'chaska', 'elote en vaso', 'vasolote', 'elote feliz', 'coctel de elote', 'elote desgranado'], 
@@ -46,8 +45,6 @@ conceptos={
     'brasier':['brasier', 'brassier', 'chichero']  
 }
 
-
-MAX_AUTO_RECONNECT_ATTEMPTS = 5
 
 def make_query(concept):
     if concept == "WC":
@@ -76,12 +73,12 @@ def graceful_auto_reconnect(mongo_op_func):
                 time.sleep(wait_t)
 
         raise Exception(f"Failed after {MAX_AUTO_RECONNECT_ATTEMPTS} attempts.")
-
     return wrapper
 
 # Your MongoDB query function that you want to handle gracefully
 @graceful_auto_reconnect
 def perform_mongo_query(my_query):
+    print(f"Performing query for {my_query}")
     return collection.find(my_query,  no_cursor_timeout=True)
 
 # Specify the CSV file path
@@ -101,17 +98,31 @@ def write_csv_data(csv_file_path, data):
                 cordenadas.extend([vertices[vertex][0], vertices[vertex][1]])
             data.extend(cordenadas)
             writer.writerow(data)
-    print(f'Tweets saved to {csv_file_path}.')
+    print(f'Tweets saved to {csv_file_path}...')
 
+parser=argparse.ArgumentParser(description='Make database .csv file from the fetched database per word, this includes the geodata and tweets')
+parser.add_argument('concepto',metavar='concept',type=str)
+parser.parse_args(['-'])
+cl_argument=parser.parse_args()
+concept=cl_argument.concepto
 
+cwd=os.getcwd()
+datadir=os.path.join(cwd,'data')
+conceptdir=os.path.join(datadir,concept)
 # Execute the query and retrieve the matching tweets
-for term in conceptos['retrete']:
-    query=make_query(term)
-    tweets = perform_mongo_query(query)
-    filename = f"mongodb-{term}.csv"
-    csv_file = os.path.join(datadir, filename)
-    write_csv_data(csv_file, tweets)
-    tweets.close()
-
+if (concept in conceptos):
+    if not os.path.exists(conceptdir):
+        os.makedirs(conceptdir)
+        print(f"Making {conceptdir} directory...")
+    for term in conceptos[concept]:
+        query=make_query(term)
+        tweets = perform_mongo_query(query)
+        filename = f"mongodb-{term}.csv"
+        csv_file = os.path.join(conceptdir, filename)
+        write_csv_data(csv_file, tweets)
+        tweets.close()
+        print(f"csv file {csv_file} writen.")
+else:
+    print(f"""Sorry concept '{concept}' not in list.""")
 # Close the MongoDB connection
 client.close()
