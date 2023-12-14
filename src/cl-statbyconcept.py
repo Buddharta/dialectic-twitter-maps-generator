@@ -25,12 +25,15 @@ conceptos={
     'lagaña':['legaña', 'lagaña', 'chinguiña'], 
     'comezón':['comezón', 'picazón', 'rasquera', 'rasquiña'],  
     'cinturón':['cinturón', 'cinto', 'fajo'],  #(bucar fajo con opción “sin billetes” en la expresión regular)
-    'retrete':['retrete', 'excusado', 'sanitario', 'inodoro', 'escusado', 'WC'], 
+    'escusado':['retrete', 'escusado/excusado', 'inodoro', 'WC'], 
     'brasier':['brasier', 'brassier', 'chichero']  
 }
 
 DATA_DIR="/home/shakya/source/PYTHON/tweet-scrape/data"
 OUT_DIR="/home/shakya/source/PYTHON/tweet-scrape/outputs"
+
+def dictsum(dic2: dict, dic1 :dict) -> dict:
+    return {key: dic1.get(key, 0) + dic2.get(key, 0) for key in set(dic1) | set(dic2)}
 
 def get_location_data(file) -> dict:
     df = pd.read_csv(file,dtype={"Estado": str,"Poblacion": int,})
@@ -42,14 +45,25 @@ def get_location_data(file) -> dict:
     return apariciones
 
 def create_csv_files(concept :str):
+    if concept == 'escusado':
+        escusado_file_path=os.path.join(DATA_DIR,f"escusado/db-escusado-fixed.csv")
+        excusado_file_path=os.path.join(DATA_DIR,f"escusado/db-excusado-fixed.csv")
+        escusado_data=get_location_data(escusado_file_path)
+        excusado_data=get_location_data(excusado_file_path)
+        ex_or_es_escusado_data=dictsum(escusado_data,excusado_data)
+    
     for palabra in conceptos[concept]:
-        concept_fname=f"{palabra}-map.csv"
+        concept_fname= "escusado-map.csv" if palabra == 'escusado/excusado' else f"{palabra}-map.csv"
         concept_file=os.path.join(OUT_DIR,concept_fname)
         with open(concept_file, "a", newline="", encoding='utf-8') as wordfile:
             if wordfile.tell() == 0:
-                dbfile_path=os.path.join(DATA_DIR,f"{concept}/db-{palabra}-fixed.csv")
-                print(f"Writing {concept_fname}.csv file...")
-                data_by_concept=get_location_data(dbfile_path)
+                if palabra == 'escusado/excusado':
+                    data_by_concept=ex_or_es_escusado_data  
+                else:
+                    dbfile_path=os.path.join(DATA_DIR,f"{concept}/db-{palabra}-fixed.csv")
+                    print(f"Writing {concept_fname}.csv file...")
+                    data_by_concept=get_location_data(dbfile_path)
+                
                 writer = csv.writer(wordfile)
                 writer.writerow(['Estado','Ocurrencias'])
                 for value in data_by_concept.items():
@@ -61,8 +75,10 @@ def create_csv_files(concept :str):
             else:
                 print(f"File {concept_file} already written, skiping...")
                 pass
+
     new_file_name=f"{concept}.csv"
     new_csv_file_path=os.path.join(OUT_DIR, new_file_name)
+    
     with open(new_csv_file_path, "a", newline="", encoding='utf-8') as outfile:
         writer = csv.writer(outfile)
         if outfile.tell() == 0: # If the file is empty,  write the header row
@@ -71,9 +87,12 @@ def create_csv_files(concept :str):
             header.extend(conceptos[concept])
             writer.writerow(header)
             for palabra in conceptos[concept]:
-                file_path=os.path.join(DATA_DIR,f"{concept}/db-{palabra}-fixed.csv")
-                print(f"Processing {file_path} data...")
-                data_by_concept=get_location_data(file_path)
+                if palabra == 'escusado/excusado':
+                    data_by_concept=ex_or_es_escusado_data  
+                else:
+                    file_path=os.path.join(DATA_DIR,f"{concept}/db-{palabra}-fixed.csv")
+                    print(f"Processing {file_path} data...")
+                    data_by_concept=get_location_data(file_path)
                 write_data.append(data_by_concept)
             for estado in estados:
                 row_data=[estado]

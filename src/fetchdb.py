@@ -41,11 +41,9 @@ conceptos={
     'lagaña':['legaña', 'lagaña', 'chinguiña'], 
     'comezón':['comezón', 'picazón', 'rasquera', 'rasquiña'],  
     'cinturón':['cinturón', 'cinto', 'fajo'],  #(bucar fajo con opción “sin billetes” en la expresión regular)
-    'retrete':['retrete', 'excusado', 'sanitario', 'inodoro', 'escusado', 'WC'], 
+    'escusado':['retrete', 'escusado/excusado', 'inodoro', 'WC'], 
     'brasier':['brasier', 'brassier', 'chichero']  
 }
-
-
 def make_query(concept):
     if concept == "WC":
         regex=r" " + concept + " "
