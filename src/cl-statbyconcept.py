@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 import csv
 import os
 import argparse
@@ -6,32 +6,35 @@ import pandas as pd
 
 corr_estados={"Coahuila de Zaragoza":"Coahuila", "México" : "Estado de México", "Michoacán de Ocampo" : "Michoacán", "Veracruz de Ignacio de la Llave":"Veracruz"}
 estados=["Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas", "Chihuahua", "Ciudad de México", "Coahuila de Zaragoza", "Colima", "Durango", "México", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco", "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas"]
+
 conceptos={
-    'esquite':['esquite', 'trolelote', 'chasca', 'chaska', 'elote en vaso', 'vasolote', 'elote feliz', 'coctel de elote', 'elote desgranado'], 
+    'esquite':['esquite', 'trolelote', 'chasca', 'elote en vaso', 'vasolote', 'elote feliz', 'coctel de elote', 'elote desgranado'], 
     'bolillo':['bolillo', 'birote'], 
     'migaja':['migaja', 'borona', 'morona', 'morusa'], 
     'queso Oaxaca':['queso Oaxaca', 'quesillo', 'queso de hebra'], 
     'hormiga':['hormiga', 'asquel', 'asquiline', 'esquiline'], 
-    'mosquito':['mosquito', 'zancudo', 'chaquiste', 'chanquiste', 'moyote'], 
+    'mosquito':['mosquito','zancudo','chaquiste','chanquiste','moyote'],
     'pavo':['pavo', 'guajolote', 'totole', 'totol', 'chompipe'], 
-    'colibrí':['colibrí', 'chupamirto', 'chuparrosa', 'chupaflor'], 
-    'automóvil':['coche', 'automóvil', 'carro', 'auto'], 
+    'colibrí':['colibri', 'chupamirto', 'chuparrosa', 'chupaflor'], 
+    'automóvil':['coche', 'automovil', 'carro', 'auto'], 
     'aguacero':['aguacero', 'chubasco', 'tormenta'], 
-    'habitación':['habitación', 'alcoba', 'dormitorio', 'recámara'], 
+    'habitación':['habitacion', 'alcoba', 'dormitorio', 'recamara'], 
     'cobija':['cobija', 'frazada'], 
     'lentes':['lentes', 'anteojo', 'gafas', 'espejuelos'], 
     'itacate':['itacate', 'lunch', 'lonche', 'bastimento'], 
     'rasguño':['rasguño', 'arañazo'], 
     'lagaña':['legaña', 'lagaña', 'chinguiña'], 
-    'comezón':['comezón', 'picazón', 'rasquera', 'rasquiña'],  
-    'cinturón':['cinturón', 'cinto', 'fajo'],  #(bucar fajo con opción “sin billetes” en la expresión regular)
-    'escusado':['retrete', 'escusado/excusado', 'inodoro', 'WC'], 
-    'brasier':['brasier', 'brassier', 'chichero']  
+    'comezón':['comezon', 'picazon', 'rasquera', 'rasquiña'],  
+    'cinturón':['cinturon', 'cinto', 'fajo'], 
+    'escusado':['retrete', 'escusado', 'inodoro', 'WC'], 
+    'brasier':['brasier', 'chichero']  
 }
 
-DATA_DIR="/home/shakya/source/PYTHON/tweet-scrape/data"
-OUT_DIR="/home/shakya/source/PYTHON/tweet-scrape/outputs"
-
+HOME=os.environ["HOME"]
+WD=os.getcwd()
+DATA_DIR=os.path.join(WD,"data")
+OUT_DIR=os.path.join(WD,"outputs")
+print(OUT_DIR)
 def dictsum(dic2: dict, dic1 :dict) -> dict:
     return {key: dic1.get(key, 0) + dic2.get(key, 0) for key in set(dic1) | set(dic2)}
 
@@ -45,25 +48,14 @@ def get_location_data(file) -> dict:
     return apariciones
 
 def create_csv_files(concept :str):
-    if concept == 'escusado':
-        escusado_file_path=os.path.join(DATA_DIR,f"escusado/db-escusado-fixed.csv")
-        excusado_file_path=os.path.join(DATA_DIR,f"escusado/db-excusado-fixed.csv")
-        escusado_data=get_location_data(escusado_file_path)
-        excusado_data=get_location_data(excusado_file_path)
-        ex_or_es_escusado_data=dictsum(escusado_data,excusado_data)
-    
     for palabra in conceptos[concept]:
-        concept_fname= "escusado-map.csv" if palabra == 'escusado/excusado' else f"{palabra}-map.csv"
+        concept_fname=f"{palabra}-map.csv"
         concept_file=os.path.join(OUT_DIR,concept_fname)
-        with open(concept_file, "a", newline="", encoding='utf-8') as wordfile:
+        with open(concept_file,"a+", newline="", encoding='utf-8') as wordfile:
             if wordfile.tell() == 0:
-                if palabra == 'escusado/excusado':
-                    data_by_concept=ex_or_es_escusado_data  
-                else:
-                    dbfile_path=os.path.join(DATA_DIR,f"{concept}/db-{palabra}-fixed.csv")
-                    print(f"Writing {concept_fname}.csv file...")
-                    data_by_concept=get_location_data(dbfile_path)
-                
+                dbfile_path=os.path.join(DATA_DIR,f"{concept}/db-{palabra}-fixed.csv")
+                print(f"Writing {concept_fname}.csv file...")
+                data_by_concept=get_location_data(dbfile_path)
                 writer = csv.writer(wordfile)
                 writer.writerow(['Estado','Ocurrencias'])
                 for value in data_by_concept.items():
@@ -79,7 +71,7 @@ def create_csv_files(concept :str):
     new_file_name=f"{concept}.csv"
     new_csv_file_path=os.path.join(OUT_DIR, new_file_name)
     
-    with open(new_csv_file_path, "a", newline="", encoding='utf-8') as outfile:
+    with open(new_csv_file_path, "a+", newline="", encoding='utf-8') as outfile:
         writer = csv.writer(outfile)
         if outfile.tell() == 0: # If the file is empty,  write the header row
             write_data=[]
@@ -87,12 +79,9 @@ def create_csv_files(concept :str):
             header.extend(conceptos[concept])
             writer.writerow(header)
             for palabra in conceptos[concept]:
-                if palabra == 'escusado/excusado':
-                    data_by_concept=ex_or_es_escusado_data  
-                else:
-                    file_path=os.path.join(DATA_DIR,f"{concept}/db-{palabra}-fixed.csv")
-                    print(f"Processing {file_path} data...")
-                    data_by_concept=get_location_data(file_path)
+                file_path=os.path.join(DATA_DIR,f"{concept}/db-{palabra}-fixed.csv")
+                print(f"Processing {file_path} data...")
+                data_by_concept=get_location_data(file_path)
                 write_data.append(data_by_concept)
             for estado in estados:
                 row_data=[estado]

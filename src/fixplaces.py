@@ -1,13 +1,13 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 import os
 import subprocess
-
-WD="/home/shakya/source/PYTHON/tweet-scrape"
+HOME=os.environ["HOME"]
+WD=os.path.join(HOME,"repos/dialectic-twitter-maps-generator") 
 DATA_DIR=os.path.join(WD,'data')
 DATA_DIR_SUBDIRS=os.listdir(DATA_DIR)
-FIX_PLACES_SCRIPT="/home/shakya/source/PYTHON/tweet-scrape/src/cl-fixfile.py"
+FIX_PLACES_SCRIPT=os.path.join(WD,"src/cl-fixfile.py")
 def execute_fixfile_script(file_path):
-    args=["/usr/bin/python3", FIX_PLACES_SCRIPT, file_path]
+    args=["python3", FIX_PLACES_SCRIPT, file_path]
     try:
         with subprocess.Popen(args, stdout=subprocess.PIPE, shell=False) as process:
             outs, errs = process.communicate()

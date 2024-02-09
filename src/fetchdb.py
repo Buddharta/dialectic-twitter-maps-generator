@@ -18,37 +18,74 @@ MONGO_MECHANISM = 'SCRAM-SHA-256'
 MAX_AUTO_RECONNECT_ATTEMPTS = 5
 
 uri = f'mongodb://{quote_plus(MONGO_USER)}:{quote_plus(MONGO_PASS)}@{MONGO_HOST}/{MONGO_DB}'
-client = MongoClient(uri, socketTimeoutMS=90000000)
+client = MongoClient(uri, socketTimeoutMS=90000000, connectTimeoutMS=90000000)
 db = client.twitterdb
 collection = db.tweetsMexico
 
 conceptos={
-    'esquite':['esquite', 'trolelote', 'chasca', 'chaska', 'elote en vaso', 'vasolote', 'elote feliz', 'coctel de elote', 'elote desgranado'], 
+    'esquite':['esquite', 'trolelote', 'chasca', 'elote en vaso', 'vasolote', 'elote feliz', 'coctel de elote', 'elote desgranado'], 
     'bolillo':['bolillo', 'birote'], 
     'migaja':['migaja', 'borona', 'morona', 'morusa'], 
     'queso Oaxaca':['queso Oaxaca', 'quesillo', 'queso de hebra'], 
     'hormiga':['hormiga', 'asquel', 'asquiline', 'esquiline'], 
-    'mosquito':['mosquito', 'zancudo', 'chaquiste', 'chanquiste', 'moyote'], 
+    'mosquito':['mosquito','zancudo','chaquiste','chanquiste','moyote'],
     'pavo':['pavo', 'guajolote', 'totole', 'totol', 'chompipe'], 
-    'colibrí':['colibrí', 'chupamirto', 'chuparrosa', 'chupaflor'], 
-    'automóvil':['coche', 'automóvil', 'carro', 'auto'], 
+    'colibrí':['colibri', 'chupamirto', 'chuparrosa', 'chupaflor'], 
+    'automóvil':['coche', 'automovil', 'carro', 'auto'], 
     'aguacero':['aguacero', 'chubasco', 'tormenta'], 
-    'habitación':['habitación', 'alcoba', 'dormitorio', 'recámara'], 
+    'habitación':['habitacion', 'alcoba', 'dormitorio', 'recamara'], 
     'cobija':['cobija', 'frazada'], 
     'lentes':['lentes', 'anteojo', 'gafas', 'espejuelos'], 
     'itacate':['itacate', 'lunch', 'lonche', 'bastimento'], 
     'rasguño':['rasguño', 'arañazo'], 
     'lagaña':['legaña', 'lagaña', 'chinguiña'], 
-    'comezón':['comezón', 'picazón', 'rasquera', 'rasquiña'],  
-    'cinturón':['cinturón', 'cinto', 'fajo'],  #(bucar fajo con opción “sin billetes” en la expresión regular)
-    'escusado':['retrete', 'escusado/excusado', 'inodoro', 'WC'], 
-    'brasier':['brasier', 'brassier', 'chichero']  
+    'comezón':['comezon', 'picazon', 'rasquera', 'rasquiña'],  
+    'cinturón':['cinturon', 'cinto', 'fajo'],  #(bucar fajo con opción “sin billetes” en la expresión regular)
+    'escusado':['retrete', 'escusado', 'inodoro', 'WC'], 
+    'brasier':['brasier', 'chichero']  
 }
-def make_query(concept):
-    if concept == "WC":
-        regex=r" " + concept + " "
-    else:
-        regex=r"" + concept + "[s]?[\!\?]?[\s\w]*"
+def make_query(term):
+    match term:
+        case "chasca":
+            regex = r"chas[ck]?a[s]?[\!\?]?[\s\w]*"
+        case "elote en vaso":
+            regex = r"elote[s]?[\s\w] en vaso[s]?[\!\?]?[\s\w]*"
+        case "elote feliz":
+            regex = r"elote[s]?[\s\w] feli[z]?[c]?[e]?[s]?[\!\?]?[\s\w]*"
+        case "elote desgranado":
+            regex = r"elote[s]?[\s\w] desgranado[s]?[\!\?]?[\s\w]*"
+        case "coctel de elote":
+            regex = r"coctel[e]?[s]?[\s\w] de elote[s]?[\!\?]?[\s\w]*"
+        case "queso Oaxaca":
+            regex = r"queso[s]?[\s\w] Oaxaca*"
+        case "queso de hebra":
+            regex = r"queso[s]?[\s\w] de hebra*"
+        case "chaquiste":
+            regex = r"cha[n]?quiste[s]?[\!\?]?[\s\w]*"
+        case "colibri":
+            regex = r"colibr[ií]?[e]?[s]?[\!\?]?[\s\w]*"
+        case "automovil":
+            regex = r"autom[oó]?vil[e]?[s]?[\!\?]?[\s\w]*"
+        case "habitacion":
+            regex = r"habitaci[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+        case "recamara":
+            regex = r"rec[aá]?mara[s]?[\!\?]?[\s\w]*"
+        case "comezon":
+            regex = r"comez[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+        case "picazon":
+            regex = r"picaz[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+        case "cinturon":
+            regex = r"cintur[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+        case "escusado":
+            regex = r"e[sx]?cusado[s]?[\!\?]?[\s\w]*"
+        case "WC":
+            regex = r"\s+WC\s+"
+        case "brasier":
+            regex = r"bras[s]?ier[e]?[s]?[\!\?]?[\s\w]*"
+        case "fajo":
+            regex = r"fajo[s]?[\!,\?]?[\s\w]*(?!*\s*billetes)"
+        case _:
+            regex = fr"{term}[e]?[s]?[\!\?]?[\s\w]*"
     query = {
         "$or" : [
             {"place": {"$ne": None}}, 
@@ -76,8 +113,12 @@ def graceful_auto_reconnect(mongo_op_func):
 # Your MongoDB query function that you want to handle gracefully
 @graceful_auto_reconnect
 def perform_mongo_query(my_query):
-    print(f"Performing query for {my_query}")
-    return collection.find(my_query,  no_cursor_timeout=True)
+        # Start a session
+    with client.start_session() as session:
+        # Set the session to be used for the following operations
+        with session.start_transaction():# Start a session
+            cursor = collection.find(my_query,  no_cursor_timeout=True)
+    return cursor
 
 # Specify the CSV file path
 def write_csv_data(csv_file_path, data):
@@ -87,40 +128,38 @@ def write_csv_data(csv_file_path, data):
             # If the file is empty,  write the header row
             writer.writerow(['Tweet', 'Fecha', 'Locacion', 'Longitud(V1)', 'Latitud(V1)', 'Longitud(V2)', 'Latitud(V2)', 'Longitud(V3)', 'Latitud(V3)', 'Longitud(V4)', 'Latitud(V4)'])
 
-        for tweet in data:
-            placedata = tweet['place']
-            data = [tweet['text'], tweet['created_at'], placedata['full_name']]
-            vertices = placedata['bounding_box']['coordinates'][0]
-            cordenadas = []
-            for vertex in range(len(vertices)):
-                cordenadas.extend([vertices[vertex][0], vertices[vertex][1]])
-            data.extend(cordenadas)
-            writer.writerow(data)
-    print(f'Tweets saved to {csv_file_path}...')
+            for tweet in data:
+                placedata = tweet['place']
+                data = [tweet['text'], tweet['created_at'], placedata['full_name']]
+                vertices = placedata['bounding_box']['coordinates'][0]
+                cordenadas = []
+                for vertex in range(len(vertices)):
+                    cordenadas.extend([vertices[vertex][0], vertices[vertex][1]])
+                data.extend(cordenadas)
+                writer.writerow(data)
+                print(f'Tweets saved to {csv_file_path}...')
+        else:
+                print('File already written. Skipping...')
 
-parser=argparse.ArgumentParser(description='Make database .csv file from the fetched database per word, this includes the geodata and tweets')
-parser.add_argument('concepto',metavar='concept',type=str)
-parser.parse_args(['-'])
-cl_argument=parser.parse_args()
-concept=cl_argument.concepto
 
-cwd=os.getcwd()
-datadir=os.path.join(cwd,'data')
-conceptdir=os.path.join(datadir,concept)
-# Execute the query and retrieve the matching tweets
-if (concept in conceptos):
+HOME = os.environ["HOME"]
+workdir=os.path.join(HOME,"repos/dialectic-twitter-maps-generator")
+print(workdir)
+datadir=os.path.join(workdir,'data')
+for concept in conceptos:
+    conceptdir=os.path.join(datadir,concept)
+    # Execute the query and retrieve the matching tweets
     if not os.path.exists(conceptdir):
         os.makedirs(conceptdir)
         print(f"Making {conceptdir} directory...")
     for term in conceptos[concept]:
+        print(f"Fetching database for tweets with {term}. This May take a while...")
         query=make_query(term)
         tweets = perform_mongo_query(query)
         filename = f"mongodb-{term}.csv"
         csv_file = os.path.join(conceptdir, filename)
         write_csv_data(csv_file, tweets)
         tweets.close()
-        print(f"csv file {csv_file} writen.")
-else:
-    print(f"""Sorry concept '{concept}' not in list.""")
-# Close the MongoDB connection
+        print(f"csv file {csv_file} written.")
+    # Close the MongoDB connection
 client.close()

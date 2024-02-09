@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+source /home/buddha/repos/dialectic-twitter-maps-generator/.venv/bin/activate
+
+LOGFILE=/home/buddha/repos/dialectic-twitter-maps-generator/outputs/output.log
+
+python3 $1 > $LOGFILE &
+shopt -s huponexit

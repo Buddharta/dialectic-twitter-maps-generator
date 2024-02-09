@@ -10,26 +10,26 @@ outdata=os.path.join(cwd,'outputs/gabmapdata.csv')
 datafiles=os.listdir(datadir)
 
 conceptos={
-    'esquite':['esquite','trolelote','chasca','chaska','elote en vaso','vasolote','elote feliz','coctel de elote','elote desgranado'],
-    'bolillo':['bolillo','birote'],
-    'migaja':['migaja','borona','morona','morusa'],
-    'queso Oaxaca':['queso Oaxaca','quesillo','queso de hebra'],
-    'hormiga':['hormiga','asquel','asquiline','esquiline'],
+    'esquite':['esquite', 'trolelote', 'chasca', 'elote en vaso', 'vasolote', 'elote feliz', 'coctel de elote', 'elote desgranado'], 
+    'bolillo':['bolillo', 'birote'], 
+    'migaja':['migaja', 'borona', 'morona', 'morusa'], 
+    'queso Oaxaca':['queso Oaxaca', 'quesillo', 'queso de hebra'], 
+    'hormiga':['hormiga', 'asquel', 'asquiline', 'esquiline'], 
     'mosquito':['mosquito','zancudo','chaquiste','chanquiste','moyote'],
-    'pavo':['pavo','guajolote','totole','totol','chompipe'],
-    'colibrí':['colibrí','chupamirto','chuparrosa','chupaflor'],
-    'automóvil':['coche','automóvil','carro','auto'],
-    'aguacero':['aguacero','chubasco','tormenta'],
-    'habitación':['habitación','alcoba','dormitorio','recámara'],
-    'cobija':['cobija','frazada'],
-    'lentes':['lentes','anteojo','gafas','espejuelos'],
-    'itacate':['itacate','lunch','lonche','bastimento'],
-    'rasguño':['rasguño','arañazo'],
-    'lagaña':['legaña','lagaña','chinguiña'],
-    'comezón':['comezón','picazón','rasquera','rasquiña'], 
-    'cinturón':['cinturón','cinto','fajo'], #(bucar fajo con opción “sin billetes” en la expresión regular)
-    'retrete':['retrete','excusado','sanitario','inodoro','escusado','WC'],
-    'brasier':['brasier','brassier','chichero']  
+    'pavo':['pavo', 'guajolote', 'totole', 'totol', 'chompipe'], 
+    'colibrí':['colibri', 'chupamirto', 'chuparrosa', 'chupaflor'], 
+    'automóvil':['coche', 'automovil', 'carro', 'auto'], 
+    'aguacero':['aguacero', 'chubasco', 'tormenta'], 
+    'habitación':['habitacion', 'alcoba', 'dormitorio', 'recamara'], 
+    'cobija':['cobija', 'frazada'], 
+    'lentes':['lentes', 'anteojo', 'gafas', 'espejuelos'], 
+    'itacate':['itacate', 'lunch', 'lonche', 'bastimento'], 
+    'rasguño':['rasguño', 'arañazo'], 
+    'lagaña':['legaña', 'lagaña', 'chinguiña'], 
+    'comezón':['comezon', 'picazon', 'rasquera', 'rasquiña'],  
+    'cinturón':['cinturon', 'cinto', 'fajo'],
+    'escusado':['retrete', 'escusado', 'inodoro', 'WC'], 
+    'brasier':['brasier', 'chichero']  
 }
 
 def get_places():

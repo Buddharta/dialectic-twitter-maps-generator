@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 import numpy as np
 import csv
 import os
@@ -13,10 +13,12 @@ datafile=parser.parse_args()
 openedfile=datafile.file
 file_path=vars(datafile)['file'].name
 fname=os.path.basename(file_path)
-print(f"Processing {fname}...")
 file_dir=os.path.dirname(file_path)
 print(f"File path: {file_dir}")
-DATA_DIR="/home/shakya/source/PYTHON/tweet-scrape/data"
+print(f"Processing {fname}...")
+
+HOME=os.environ["HOME"]
+DATA_DIR=os.path.join(HOME,"repos/dialectic-twitter-maps-generator/data")
 AGEEML_DATA={}
 AGEEML_file=os.path.join(DATA_DIR,'Extra/AGEEML_2023821859377.csv')
 with open(AGEEML_file,'r') as fl:
