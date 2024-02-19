@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+LOGFILE=/home/buddha/repos/dialectic-twitter-maps-generator/outputs/output.log
+for arg in "$@"; do
+	src/cl-fixfile.py "$arg" >> $LOGFILE &
+	shopt -s huponexit
+done
+

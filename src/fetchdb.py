@@ -57,7 +57,7 @@ def make_query(term):
         case "coctel de elote":
             regex = r"coctel[e]?[s]?[\s\w] de elote[s]?[\!\?]?[\s\w]*"
         case "queso Oaxaca":
-            regex = r"queso[s]?[\s\w] Oaxaca*"
+            regex = r"queso[s]?[\s\w] [Oo]?axaca*"
         case "queso de hebra":
             regex = r"queso[s]?[\s\w] de hebra*"
         case "chaquiste":
