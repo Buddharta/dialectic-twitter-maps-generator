@@ -1,6 +1,7 @@
 #!/usr/bin/python3
+import datetime
+import time
 from pymongo import MongoClient
-from datetime import datetime,  timedelta
 from urllib.parse import quote_plus
 import csv
 import os
@@ -28,81 +29,86 @@ datadir=os.path.join(workdir,'data')
 #conceptdir=os.path.join(datadir,concept)
 
 conceptos={
-    'esquite':['esquite', 'trolelote', 'chasca', 'chaska', 'elote en vaso', 'vasolote', 'elote feliz', 'coctel de elote', 'elote desgranado'],
-    'bolillo':['bolillo', 'birote'],
-    'migaja':['migaja', 'borona', 'morona', 'morusa'],
-    'queso Oaxaca':['queso Oaxaca', 'quesillo', 'queso de hebra'],
-    'hormiga':['hormiga', 'asquel', 'asquiline', 'esquiline'],
-    'mosquito':['mosquito', 'zancudo', 'chaquiste', 'chanquiste', 'moyote'],
-    'pavo':['pavo', 'guajolote', 'totole', 'totol', 'chompipe'],
-    'colibrí':['colibrí', 'chupamirto', 'chuparrosa', 'chupaflor'],
-    'automóvil':['coche', 'automóvil', 'carro', 'auto'],
-    'aguacero':['aguacero', 'chubasco', 'tormenta'],
-    'habitación':['habitación', 'alcoba', 'dormitorio', 'recámara'],
-    'cobija':['cobija', 'frazada'],
-    'lentes':['lentes', 'anteojo', 'gafas', 'espejuelos'],
-    'itacate':['itacate', 'lunch', 'lonche', 'bastimento'],
-    'rasguño':['rasguño', 'arañazo'],
-    'lagaña':['legaña', 'lagaña', 'chinguiña'],
-    'comezón':['comezón', 'picazón', 'rasquera', 'rasquiña'],
+    'esquite':['esquite', 'trolelote', 'chasca', 'chaska', 'elote en vaso', 'vasolote', 'elote feliz', 'coctel de elote', 'elote desgranado'], 
+    'bolillo':['bolillo', 'birote'], 
+    'migaja':['migaja', 'borona', 'morona', 'morusa'], 
+    'queso Oaxaca':['queso Oaxaca', 'quesillo', 'queso de hebra'], 
+    'hormiga':['hormiga', 'asquel', 'asquiline', 'esquiline'], 
+    'mosquito':['mosquito', 'zancudo', 'chaquiste', 'chanquiste', 'moyote'], 
+    'pavo':['pavo', 'guajolote', 'totole', 'totol', 'chompipe'], 
+    'colibrí':['colibrí', 'chupamirto', 'chuparrosa', 'chupaflor'], 
+    'automóvil':['coche', 'automóvil', 'carro', 'auto'], 
+    'aguacero':['aguacero', 'chubasco', 'tormenta'], 
+    'habitación':['habitación', 'alcoba', 'dormitorio', 'recámara'], 
+    'cobija':['cobija', 'frazada'], 
+    'lentes':['lentes', 'anteojo', 'gafas', 'espejuelos'], 
+    'itacate':['itacate', 'lunch', 'lonche', 'bastimento'], 
+    'rasguño':['rasguño', 'arañazo'], 
+    'lagaña':['legaña', 'lagaña', 'chinguiña'], 
+    'comezón':['comezón', 'picazón', 'rasquera', 'rasquiña'],  
     'cinturón':['cinturón', 'cinto', 'fajo'],  #(bucar fajo con opción “sin billetes” en la expresión regular)
-    'escusado':['retrete', 'escusado/excusado', 'inodoro', 'WC'],
-    'brasier':['brasier', 'brassier', 'chichero']
+    'escusado':['retrete', 'escusado/excusado', 'inodoro', 'WC'], 
+    'brasier':['brasier', 'brassier', 'chichero']  
 }
 
 
-def make_query(term):
-    match term:
+class query:
+    def __init__(self, term :str):
+    self.term = term
+    match self.term:
         case "chasca":
-            regex = r"\s+chas[ck]?a[s]?[\!\?]?[\s\w]*"
+            self.regex = r"chas[ck]?a[s]?[\!\?]?[\s\w]\s+"
         case "elote en vaso":
-            regex = r"\s+elote[s]?[\s\w] en vaso[s]?[\!\?]?[\s\w]*"
+            self.regex = r"elote[s]?[\s\w] en vaso[s]?[\!\?]?[\s\w]\s+"
         case "elote feliz":
-            regex = r"\s+elote[s]?[\s\w] feli[z]?[c]?[e]?[s]?[\!\?]?[\s\w]*"
+            self.regex = r"elote[s]?[\s\w] feli[z]?[c]?[e]?[s]?[\!\?]?[\s\w]\s+"
         case "elote desgranado":
-            regex = r"\s+elote[s]?[\s\w] desgranado[s]?[\!\?]?[\s\w]*"
+            self.regex = r"elote[s]?[\s\w] desgranado[s]?[\!\?]?[\s\w]\s+"
         case "coctel de elote":
-            regex = r"\s+coctel[e]?[s]?[\s\w] de elote[s]?[\!\?]?[\s\w]*"
+            self.regex = r"coctel[e]?[s]?[\s\w] de elote[s]?[\!\?]?[\s\w]\s+"
         case "queso Oaxaca":
-            regex = r"\s+queso[s]?[\s\w] [Oo]?axaca*"
+            self.regex = r"queso[s]?[\s\w] [Oo]?axaca[\!\?]?[\s\w]\s+"
         case "queso de hebra":
-            regex = r"\s+queso[s]?[\s\w] [d]?[e]? hebra*"
+            self.regex = r"queso[s]?[\s\w] [d]?[e]? hebra[\!\?]?[\s\w]\s+"
         case 'asquiline':
-            regex = r"\s+[ea]?squilin[e]?[s]?[\!\?]?[\s\w]*":
+            self.regex = r"[ea]?squilin[e]?[s]?[\!\?]?[\s\w]\s+":
         case "chaquiste":
-            regex = r"\s+cha[n]?quiste[s]?[\!\?]?[\s\w]*"
+            self.regex = r"cha[n]?quiste[s]?[\!\?]?[\s\w]\s+"
         case "colibri":
-            regex = r"\s+colibr[ií]?[e]?[s]?[\!\?]?[\s\w]*"
+            self.regex = r"colibr[ií]?[e]?[s]?[\!\?]?[\s\w]\s+"
         case "automovil":
-            regex = r"\s+autom[oó]?vil[e]?[s]?[\!\?]?[\s\w]*"
+            self.regex = r"autom[oó]?vil[e]?[s]?[\!\?]?[\s\w]\s+"
         case "habitacion":
-            regex = r"\s+habitaci[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+            self.regex = r"habitaci[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
         case "recamara":
-            regex = r"\s+rec[aá]?mara[s]?[\!\?]?[\s\w]*"
+            self.regex = r"rec[aá]?mara[s]?[\!\?]?[\s\w]\s+"
         case "comezon":
-            regex = r"\s+comez[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+            self.regex = r"comez[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
         case "picazon":
-            regex = r"'\s+picaz[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+            self.regex = r"'picaz[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
         case "cinturon":
-            regex = r"\s+cintur[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+            self.regex = r"cintur[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
         case "escusado":
-            regex = r"\s+e[sx]?cusado[s]?[\!\?]?[\s\w]*"
+            self.regex = r"e[sx]?cusado[s]?[\!\?]?[\s\w]\s+"
         case "WC":
-            regex = r"\s+WC\s+"
+            self.regex = r"\s+WC\s+"
         case "brasier":
-            regex = r"\s+bras[s]?ier[e]?[s]?[\!\?]?\s+[\s\w]"
+            self.regex = r"bras[s]?ier[e]?[s]?[\!\?]?\s+[\s\w]"
         case "fajo":
-            regex = r"\s+fajo[s]?[\!,\?]?\s+[\w]*(?!*\s*billetes)"
+            self.regex = r"fajo[s]?[\!,\?]?\s+[\w]*(?!*billetes)"
         case _:
-            regex = fr"\s+{term}[e]?[s]?[\!\?]?\s+[\w]*"
-    query = {
-        "$or" : [
-            {"place": {"$ne": None}},
-                {"geo": {"$ne": None}},
-        ],
-        "text": {"$regex": regex,  "$options": "i"}
-        }
-    return query
+            self.regex = fr"{term}[e]?[s]?[\!\?]?[\s\w]\s+"
+
+
+    def query(self):
+        query = {
+            "$or" : [
+                {"place": {"$ne": None}},
+                    {"geo": {"$ne": None}},
+            ],
+            "text": {"$regex": self.regex,  "$options": "i"}
+            }
+        return query
 
 
 def graceful_auto_reconnect(mongo_op_func):
@@ -157,19 +163,30 @@ concept=cl_argument.concepto
 conceptdir=os.path.join(datadir,concept)
 
 # Execute the query and retrieve the matching tweets
-if (concept in conceptos):
-    if not os.path.exists(conceptdir):
-        os.makedirs(conceptdir)
-        print(f"Making {conceptdir} directory...")
-    for term in conceptos[concept]:
-        query=make_query(term)
-        tweets = perform_mongo_query(query)
-        filename = f"mongodb-{term}.csv"
-        csv_file = os.path.join(conceptdir, filename)
-        write_csv_data(csv_file, tweets)
-        tweets.close()
-        print(f"csv file {csv_file} writen.")
-else:
-    print(f"""Sorry concept '{concept}' not in list.""")
+
+last_query_time = 0
+while True:
+    if (concept in conceptos):
+        q=query(concept)
+        tweets = perform_mongo_query(q.query)
+        now = datetime.datetime.now()
+        last_query_time = now
+        for data in tweets:
+            placedata = data['place']
+            textdata = [data['text'], data['created_at'], placedata['full_name']]
+            vertices = placedata['bounding_box']['coordinates'][0]
+            cordenadas = []
+            for vertex in range(len(vertices)):
+                cordenadas.extend([vertices[vertex][0], vertices[vertex][1]])
+            textdata.extend(cordenadas)
+            print(textdata)
+            time.sleep(1)
+    else:
+        print(f"""Sorry concept '{concept}' not in list. Please enter new concept""")
+        concept=input()
+f = io.StringIO()
+with redirect_stdout(f):
+    fix_places(file_dir,fname)
+out = f.getvalue()
 # Close the MongoDB connection
 client.close()

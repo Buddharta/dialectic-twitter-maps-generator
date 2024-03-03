@@ -1,3 +1,4 @@
+## This was never used but I will keep it for future reference 
 import requests
 import json
 import csv

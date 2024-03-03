@@ -27,7 +27,7 @@ conceptos={
     'bolillo':['bolillo', 'birote'], 
     'migaja':['migaja', 'borona', 'morona', 'morusa'], 
     'queso Oaxaca':['queso Oaxaca', 'quesillo', 'queso de hebra'], 
-    'hormiga':['hormiga', 'asquel', 'asquiline', 'esquiline'], 
+    'hormiga':['hormiga', 'asquel', 'asquiline'], 
     'mosquito':['mosquito','zancudo','chaquiste','chanquiste','moyote'],
     'pavo':['pavo', 'guajolote', 'totole', 'totol', 'chompipe'], 
     'colibrí':['colibri', 'chupamirto', 'chuparrosa', 'chupaflor'], 
@@ -47,45 +47,47 @@ conceptos={
 def make_query(term):
     match term:
         case "chasca":
-            regex = r"chas[ck]?a[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+chas[ck]?a[s]?[\!\?]?[\s\w]*"
         case "elote en vaso":
-            regex = r"elote[s]?[\s\w] en vaso[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+elote[s]?[\s\w] en vaso[s]?[\!\?]?[\s\w]*"
         case "elote feliz":
-            regex = r"elote[s]?[\s\w] feli[z]?[c]?[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+elote[s]?[\s\w] feli[z]?[c]?[e]?[s]?[\!\?]?[\s\w]*"
         case "elote desgranado":
-            regex = r"elote[s]?[\s\w] desgranado[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+elote[s]?[\s\w] desgranado[s]?[\!\?]?[\s\w]*"
         case "coctel de elote":
-            regex = r"coctel[e]?[s]?[\s\w] de elote[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+coctel[e]?[s]?[\s\w] de elote[s]?[\!\?]?[\s\w]*"
         case "queso Oaxaca":
-            regex = r"queso[s]?[\s\w] [Oo]?axaca*"
+            regex = r"\s+queso[s]?[\s\w] [Oo]?axaca*"
         case "queso de hebra":
-            regex = r"queso[s]?[\s\w] de hebra*"
+            regex = r"\s+queso[s]?[\s\w] [d]?[e]? hebra*"
+        case 'asquiline':
+            regex = r"\s+[ea]?squilin[e]?[s]?[\!\?]?[\s\w]*":
         case "chaquiste":
-            regex = r"cha[n]?quiste[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+cha[n]?quiste[s]?[\!\?]?[\s\w]*"
         case "colibri":
-            regex = r"colibr[ií]?[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+colibr[ií]?[e]?[s]?[\!\?]?[\s\w]*"
         case "automovil":
-            regex = r"autom[oó]?vil[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+autom[oó]?vil[e]?[s]?[\!\?]?[\s\w]*"
         case "habitacion":
-            regex = r"habitaci[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+habitaci[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
         case "recamara":
-            regex = r"rec[aá]?mara[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+rec[aá]?mara[s]?[\!\?]?[\s\w]*"
         case "comezon":
-            regex = r"comez[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+comez[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
         case "picazon":
-            regex = r"picaz[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"'\s+picaz[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
         case "cinturon":
-            regex = r"cintur[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+cintur[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
         case "escusado":
-            regex = r"e[sx]?cusado[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+e[sx]?cusado[s]?[\!\?]?[\s\w]*"
         case "WC":
             regex = r"\s+WC\s+"
         case "brasier":
-            regex = r"bras[s]?ier[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"\s+bras[s]?ier[e]?[s]?[\!\?]?\s+[\s\w]"
         case "fajo":
-            regex = r"fajo[s]?[\!,\?]?[\s\w]*(?!*\s*billetes)"
+            regex = r"\s+fajo[s]?[\!,\?]?\s+[\w]*(?!*\s*billetes)"
         case _:
-            regex = fr"{term}[e]?[s]?[\!\?]?[\s\w]*"
+            regex = fr"\s+{term}[e]?[s]?[\!\?]?\s+[\w]*"
     query = {
         "$or" : [
             {"place": {"$ne": None}}, 
