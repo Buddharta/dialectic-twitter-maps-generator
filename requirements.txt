@@ -1,3 +1,7 @@
+scikit-learn
+numpy
 pandas
 pymongo
 requests
+flask
+python-dotenv

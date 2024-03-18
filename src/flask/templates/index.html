@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+  <center>
+    <h2>Search for a term</h2>
+    <tbody>
+      <form action="{{ url_for('search',term=search_query) }}" method="GET" >
+        <input type="search" name="search_query" placeholder="" value="{{ request.args.get('search_query', '') }}"/>
+        <input type="submit" value="Search!" /><br>
+      </form>
+    </tbody>
+    {% block search %}
+
+    {% endblock search %}
+  </center>
+</main>
+{% endblock content %}

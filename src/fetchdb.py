@@ -9,6 +9,16 @@ import logging
 import time
 import functools
 import argparse
+from dotenv import load_dotenv
+
+#MONGO_DB = os.getenv('DB')
+#MONGO_HOST = os.getenv('HOST')
+#MONGO_USER = (str)os.getenv('USER')
+#MONGO_PASS = (str)os.getenv('PASS')
+#MONGO_MECHANISM = os.getenv('MECHANISM')
+#MAX_AUTO_RECONNECT_ATTEMPTS = 5
+
+#uri = f"mongodb://{MONGO_USER}:{MONGO_PASS}@{MONGO_HOST}/{MONGO_DB}"
 
 MONGO_DB = 'twitterdb'
 MONGO_HOST = '132.247.22.53'
@@ -18,6 +28,10 @@ MONGO_MECHANISM = 'SCRAM-SHA-256'
 MAX_AUTO_RECONNECT_ATTEMPTS = 5
 
 uri = f'mongodb://{quote_plus(MONGO_USER)}:{quote_plus(MONGO_PASS)}@{MONGO_HOST}/{MONGO_DB}'
+
+
+
+print(uri)
 client = MongoClient(uri, socketTimeoutMS=90000000, connectTimeoutMS=90000000)
 db = client.twitterdb
 collection = db.tweetsMexico
@@ -45,49 +59,52 @@ conceptos={
     'brasier':['brasier', 'chichero']  
 }
 def make_query(term):
+
     match term:
         case "chasca":
-            regex = r"\s+chas[ck]?a[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?chas[ck]?a[s]?[\!\?]?[\s\w]\s+"
         case "elote en vaso":
-            regex = r"\s+elote[s]?[\s\w] en vaso[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?elote[s]?[\s\w] en vaso[s]?[\!\?]?[\s\w]\s+"
         case "elote feliz":
-            regex = r"\s+elote[s]?[\s\w] feli[z]?[c]?[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?elote[s]?[\s\w] feli[z]?[c]?[e]?[s]?[\!\?]?[\s\w]\s+"
         case "elote desgranado":
-            regex = r"\s+elote[s]?[\s\w] desgranado[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?elote[s]?[\s\w] desgranado[s]?[\!\?]?[\s\w]\s+"
         case "coctel de elote":
-            regex = r"\s+coctel[e]?[s]?[\s\w] de elote[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?coctel[e]?[s]?[\s\w] de elote[s]?[\!\?]?[\s\w]\s+"
         case "queso Oaxaca":
-            regex = r"\s+queso[s]?[\s\w] [Oo]?axaca*"
+            regex = r"[\s+]?queso[s]?[\s\w] [Oo]?axaca[\!\?]?[\s\w]\s+"
         case "queso de hebra":
-            regex = r"\s+queso[s]?[\s\w] [d]?[e]? hebra*"
+            regex = r"[\s+]?queso[s]?[\s\w] [d]?[e]? hebra[\!\?]?[\s\w]\s+"
         case 'asquiline':
-            regex = r"\s+[ea]?squilin[e]?[s]?[\!\?]?[\s\w]*":
+            regex = r"[\s+]?[ea]?squilin[e]?[s]?[\!\?]?[\s\w]\s+"
         case "chaquiste":
-            regex = r"\s+cha[n]?quiste[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?cha[n]?quiste[s]?[\!\?]?[\s\w]\s+"
         case "colibri":
-            regex = r"\s+colibr[ií]?[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?colibr[ií]?[e]?[s]?[\!\?]?[\s\w]\s+"
         case "automovil":
-            regex = r"\s+autom[oó]?vil[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?autom[oó]?vil[e]?[s]?[\!\?]?[\s\w]\s+"
         case "habitacion":
-            regex = r"\s+habitaci[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?habitaci[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
         case "recamara":
-            regex = r"\s+rec[aá]?mara[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?rec[aá]?mara[s]?[\!\?]?[\s\w]\s+"
         case "comezon":
-            regex = r"\s+comez[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?comez[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
         case "picazon":
-            regex = r"'\s+picaz[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?'picaz[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
         case "cinturon":
-            regex = r"\s+cintur[oó]?n[e]?[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?cintur[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
         case "escusado":
-            regex = r"\s+e[sx]?cusado[s]?[\!\?]?[\s\w]*"
+            regex = r"[\s+]?e[sx]?cusado[s]?[\!\?]?[\s\w]\s+"
         case "WC":
             regex = r"\s+WC\s+"
         case "brasier":
-            regex = r"\s+bras[s]?ier[e]?[s]?[\!\?]?\s+[\s\w]"
+            regex = r"[\s+]?bras[s]?ier[e]?[s]?[\!\?]?\s+[\s\w]"
         case "fajo":
-            regex = r"\s+fajo[s]?[\!,\?]?\s+[\w]*(?!*\s*billetes)"
+            regex = r"[\s+]?fajo[s]?[\!,\?]?\s+[\w]*(?!*billetes)"
         case _:
-            regex = fr"\s+{term}[e]?[s]?[\!\?]?\s+[\w]*"
+            regex = fr"[\s+]?{term}[e]?[s]?[\!\?]?[\s\w]\s+"
+
+
     query = {
         "$or" : [
             {"place": {"$ne": None}}, 

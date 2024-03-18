@@ -1,0 +1,10 @@
+
+{% extends "index.html" %}
+{% block search %}
+<p>Searched Term: {{term}}</p>
+    <ul>
+          {% for dir in data %}
+            <li>{{ dir }}</li>
+          {% endfor %}
+    </ul>
+{% endblock search %}

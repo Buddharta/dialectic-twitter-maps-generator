@@ -1,9 +1,11 @@
 #!/usr/bin/env python
+import pandas as pd
 import numpy as np
 import csv
 import os
 import argparse
 import io
+from scipy.spatial import KDTree
 from contextlib import redirect_stdout
 
 parser=argparse.ArgumentParser(description='Fix place data of given files in the database.')
@@ -19,33 +21,17 @@ print(f"Processing {fname}...")
 
 HOME=os.environ["HOME"]
 DATA_DIR=os.path.join(HOME,"repos/dialectic-twitter-maps-generator/data")
-AGEEML_DATA={}
 AGEEML_file=os.path.join(DATA_DIR,'Extra/AGEEML_2023821859377.csv')
-with open(AGEEML_file,'r') as fl:
-    print("Loading AGEEML file...")
-    csv_file=csv.DictReader(fl)
-    dictlist=list(csv_file)
-    AGEEML_DATA={
-    'Ambito':[data['AMBITO'] for data in dictlist],
-    'Estado':[f"{data['NOM_ENT']}" for data in dictlist],
-    'Nombre':[f"{data['NOM_MUN']}, {data['NOM_LOC']}" for data in dictlist],
-    'Coordenadas':[np.array([data['LON_DECIMAL'],data['LAT_DECIMAL']],dtype=float) for data in dictlist],
-    'Poblacion':[0 if data['POB_TOTAL'] == "-" else int(data['POB_TOTAL']) for data in dictlist ]
-    }
+AGEEML_data=pd.read_csv(AGEEML_file,
+                        dtype={'NOM_ENT':str,'NOM_MUN':str,'NOM_LOC':str,'AMBITO':str,'LON_DECIMAL':np.float16,'LAT_DECIMAL':np.float16,'POB_TOTAL':str})
 
 def closest_AGEEML_2023821859377_location(coordinates) -> list:
-    min=1000
-    index=0
-    pindex=0
-    for point in AGEEML_DATA['Coordenadas']:
-        distance=np.sum(np.abs(coordinates-point))
-        if distance < min:
-            min=distance
-            pindex=index
-        index+=1
-        if min < 0.01:
-            break
-    closest_place_data=[AGEEML_DATA['Estado'][pindex], AGEEML_DATA['Nombre'][pindex], AGEEML_DATA['Ambito'][pindex], coordinates[0], coordinates[1], AGEEML_DATA['Poblacion'][pindex]]
+    tree = KDTree(AGEEML_data[['LON_DECIMAL', 'LAT_DECIMAL']])
+    # Query the KDTree to find the index of the closest point
+    _, min_index = tree.query(coordinates)
+    # Retrieve the row with minimum distance
+    closest_location = AGEEML_data.iloc[min_index]
+    closest_place_data=[AGEEML_data['NOM_ENT'][min_index], AGEEML_data['NOM_MUN'][min_index], AGEEML_data['AMBITO'][min_index], coordinates[0], coordinates[1], AGEEML_data['POB_TOTAL'][min_index]]
     return closest_place_data
 
 def fix_places(data_dir,name :str) -> int:

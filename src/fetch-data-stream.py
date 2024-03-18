@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import logging
 import datetime
 import time
 from pymongo import MongoClient
@@ -10,6 +11,16 @@ import logging
 import time
 import functools
 import argparse
+from dotenv import load_dotenv
+
+#MONGO_DB = os.getenv('DB')
+#MONGO_HOST = os.getenv('HOST')
+#MONGO_USER = (str)os.getenv('USER')
+#MONGO_PASS = (str)os.getenv('PASS')
+#MONGO_MECHANISM = os.getenv('MECHANISM')
+#MAX_AUTO_RECONNECT_ATTEMPTS = 5
+
+#uri = f"mongodb://{MONGO_USER}:{MONGO_PASS}@{MONGO_HOST}/{MONGO_DB}"
 
 MONGO_DB = 'twitterdb'
 MONGO_HOST = '132.247.22.53'
@@ -19,10 +30,14 @@ MONGO_MECHANISM = 'SCRAM-SHA-256'
 MAX_AUTO_RECONNECT_ATTEMPTS = 5
 
 uri = f'mongodb://{quote_plus(MONGO_USER)}:{quote_plus(MONGO_PASS)}@{MONGO_HOST}/{MONGO_DB}'
+
+
+
 client = MongoClient(uri, socketTimeoutMS=90000000)
 db = client.twitterdb
 collection = db.tweetsMexico
 
+MAX_AUTO_RECONNECT_ATTEMPTS = 5
 HOME = os.environ["HOME"]
 workdir=os.path.join(HOME,"repos/dialectic-twitter-maps-generator")
 datadir=os.path.join(workdir,'data')
@@ -54,51 +69,50 @@ conceptos={
 
 class query:
     def __init__(self, term :str):
-    self.term = term
-    match self.term:
-        case "chasca":
-            self.regex = r"chas[ck]?a[s]?[\!\?]?[\s\w]\s+"
-        case "elote en vaso":
-            self.regex = r"elote[s]?[\s\w] en vaso[s]?[\!\?]?[\s\w]\s+"
-        case "elote feliz":
-            self.regex = r"elote[s]?[\s\w] feli[z]?[c]?[e]?[s]?[\!\?]?[\s\w]\s+"
-        case "elote desgranado":
-            self.regex = r"elote[s]?[\s\w] desgranado[s]?[\!\?]?[\s\w]\s+"
-        case "coctel de elote":
-            self.regex = r"coctel[e]?[s]?[\s\w] de elote[s]?[\!\?]?[\s\w]\s+"
-        case "queso Oaxaca":
-            self.regex = r"queso[s]?[\s\w] [Oo]?axaca[\!\?]?[\s\w]\s+"
-        case "queso de hebra":
-            self.regex = r"queso[s]?[\s\w] [d]?[e]? hebra[\!\?]?[\s\w]\s+"
-        case 'asquiline':
-            self.regex = r"[ea]?squilin[e]?[s]?[\!\?]?[\s\w]\s+":
-        case "chaquiste":
-            self.regex = r"cha[n]?quiste[s]?[\!\?]?[\s\w]\s+"
-        case "colibri":
-            self.regex = r"colibr[ií]?[e]?[s]?[\!\?]?[\s\w]\s+"
-        case "automovil":
-            self.regex = r"autom[oó]?vil[e]?[s]?[\!\?]?[\s\w]\s+"
-        case "habitacion":
-            self.regex = r"habitaci[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
-        case "recamara":
-            self.regex = r"rec[aá]?mara[s]?[\!\?]?[\s\w]\s+"
-        case "comezon":
-            self.regex = r"comez[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
-        case "picazon":
-            self.regex = r"'picaz[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
-        case "cinturon":
-            self.regex = r"cintur[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
-        case "escusado":
-            self.regex = r"e[sx]?cusado[s]?[\!\?]?[\s\w]\s+"
-        case "WC":
-            self.regex = r"\s+WC\s+"
-        case "brasier":
-            self.regex = r"bras[s]?ier[e]?[s]?[\!\?]?\s+[\s\w]"
-        case "fajo":
-            self.regex = r"fajo[s]?[\!,\?]?\s+[\w]*(?!*billetes)"
-        case _:
-            self.regex = fr"{term}[e]?[s]?[\!\?]?[\s\w]\s+"
-
+        self.term = term
+        match self.term:
+            case "chasca":
+                self.regex = r"chas[ck]?a[s]?[\!\?]?[\s\w]\s+"
+            case "elote en vaso":
+                self.regex = r"elote[s]?[\s\w] en vaso[s]?[\!\?]?[\s\w]\s+"
+            case "elote feliz":
+                self.regex = r"elote[s]?[\s\w] feli[z]?[c]?[e]?[s]?[\!\?]?[\s\w]\s+"
+            case "elote desgranado":
+                self.regex = r"elote[s]?[\s\w] desgranado[s]?[\!\?]?[\s\w]\s+"
+            case "coctel de elote":
+                self.regex = r"coctel[e]?[s]?[\s\w] de elote[s]?[\!\?]?[\s\w]\s+"
+            case "queso Oaxaca":
+                self.regex = r"queso[s]?[\s\w] [Oo]?axaca[\!\?]?[\s\w]\s+"
+            case "queso de hebra":
+                self.regex = r"queso[s]?[\s\w] [d]?[e]? hebra[\!\?]?[\s\w]\s+"
+            case 'asquiline':
+                self.regex = r"[ea]?squilin[e]?[s]?[\!\?]?[\s\w]\s+"
+            case "chaquiste":
+                self.regex = r"cha[n]?quiste[s]?[\!\?]?[\s\w]\s+"
+            case "colibri":
+                self.regex = r"colibr[ií]?[e]?[s]?[\!\?]?[\s\w]\s+"
+            case "automovil":
+                self.regex = r"autom[oó]?vil[e]?[s]?[\!\?]?[\s\w]\s+"
+            case "habitacion":
+                self.regex = r"habitaci[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
+            case "recamara":
+                self.regex = r"rec[aá]?mara[s]?[\!\?]?[\s\w]\s+"
+            case "comezon":
+                self.regex = r"comez[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
+            case "picazon":
+                self.regex = r"'picaz[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
+            case "cinturon":
+                self.regex = r"cintur[oó]?n[e]?[s]?[\!\?]?[\s\w]\s+"
+            case "escusado":
+                self.regex = r"e[sx]?cusado[s]?[\!\?]?[\s\w]\s+"
+            case "WC":
+                self.regex = r"\s+WC\s+"
+            case "brasier":
+                self.regex = r"bras[s]?ier[e]?[s]?[\!\?]?\s+[\s\w]"
+            case "fajo":
+                self.regex = r"fajo[s]?[\!,\?]?\s+[\w]*(?!*billetes)"
+            case _:
+                self.regex = fr"{term}[e]?[s]?[\!\?]?[\s\w]\s+"
 
     def query(self):
         query = {
@@ -166,27 +180,34 @@ conceptdir=os.path.join(datadir,concept)
 
 last_query_time = 0
 while True:
-    if (concept in conceptos):
-        q=query(concept)
-        tweets = perform_mongo_query(q.query)
-        now = datetime.datetime.now()
-        last_query_time = now
-        for data in tweets:
-            placedata = data['place']
-            textdata = [data['text'], data['created_at'], placedata['full_name']]
-            vertices = placedata['bounding_box']['coordinates'][0]
-            cordenadas = []
-            for vertex in range(len(vertices)):
-                cordenadas.extend([vertices[vertex][0], vertices[vertex][1]])
-            textdata.extend(cordenadas)
-            print(textdata)
-            time.sleep(1)
-    else:
-        print(f"""Sorry concept '{concept}' not in list. Please enter new concept""")
-        concept=input()
-f = io.StringIO()
-with redirect_stdout(f):
-    fix_places(file_dir,fname)
-out = f.getvalue()
+    if (concept not in conceptos.keys() or concept not in coceptos.values()):
+        logging.warning(f"Concept {concept} is not in concept list!")
+    q=query(concept)
+    tweets = perform_mongo_query(q.query())
+    now = datetime.datetime.now()
+    last_query_time = now
+    for data in tweets:
+        output = {
+            "user": {
+                "name": data["user"]["name"],"screen_name": data["user"]["screen_name"], "id":data["user"]["id_str"]
+                },
+            "tweet":{
+                "tweet_id": data['id_str'],"text": data['text'] ,"created_at": data['created_at'], "url": data['source']
+            },
+            "place": data['place'],
+            "last_query_time": now
+        }
+        print(f"Termino buscado: {q.term:<10}, regex: {q.regex:<25}")
+        print("__________________________________________________________________________")
+        print(f'''Usuario: {output["user"]["name"]:<10}, id: {output["user"]["id"]:<10}''')
+        print("__________________________________________________________________________")
+        print(f'''Tweet: {output["tweet"]["text"]:<240}''')
+        print(f'''Tweet_ID: {output["tweet"]["tweet_id"]:<240}''')
+        print("__________________________________________________________________________")
+        time.sleep(2)
+#f = io.StringIO()
+#with redirect_stdout(f):
+#    fix_places(file_dir,fname)
+#out = f.getvalue()
 # Close the MongoDB connection
 client.close()

@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
-#source /home/buddha/repos/dialectic-twitter-maps-generator/.venv/bin/activate
 
 LOGFILE=/home/buddha/repos/dialectic-twitter-maps-generator/outputs/output.log
+FLASK_APP="app.py"
 
-python3 $1 > $LOGFILE &
-shopt -s huponexit
+
+if [ "$(echo "$FILE1" | awk -F"/" '{print $NF}')" == $FLASK_APP ] 
+	then
+	nohup python3 "$1" > $LOGFILE 2>&1
+	shopt -s huponexit
+else
+	python3 "$1" > $LOGFILE &
+	shopt -s huponexit
+fi
+

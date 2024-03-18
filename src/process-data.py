@@ -7,12 +7,13 @@ import pandas as pd
 corr_estados={"Coahuila de Zaragoza":"Coahuila", "México" : "Estado de México", "Michoacán de Ocampo" : "Michoacán", "Veracruz de Ignacio de la Llave":"Veracruz"}
 estados=["Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas", "Chihuahua", "Ciudad de México", "Coahuila de Zaragoza", "Colima", "Durango", "México", "Guanajuato", "Guerrero", "Hidalgo", "Jalisco", "Michoacán de Ocampo", "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas"]
 
+
 conceptos={
     'esquite':['esquite', 'trolelote', 'chasca', 'elote en vaso', 'vasolote', 'elote feliz', 'coctel de elote', 'elote desgranado'], 
     'bolillo':['bolillo', 'birote'], 
     'migaja':['migaja', 'borona', 'morona', 'morusa'], 
     'queso Oaxaca':['queso Oaxaca', 'quesillo', 'queso de hebra'], 
-    'hormiga':['hormiga', 'asquel', 'asquiline', 'esquiline'], 
+    'hormiga':['hormiga', 'asquel', 'asquiline'], 
     'mosquito':['mosquito','zancudo','chaquiste','chanquiste','moyote'],
     'pavo':['pavo', 'guajolote', 'totole', 'totol', 'chompipe'], 
     'colibrí':['colibri', 'chupamirto', 'chuparrosa', 'chupaflor'], 
@@ -25,13 +26,13 @@ conceptos={
     'rasguño':['rasguño', 'arañazo'], 
     'lagaña':['legaña', 'lagaña', 'chinguiña'], 
     'comezón':['comezon', 'picazon', 'rasquera', 'rasquiña'],  
-    'cinturón':['cinturon', 'cinto', 'fajo'], 
+    'cinturón':['cinturon', 'cinto', 'fajo'],  
     'escusado':['retrete', 'escusado', 'inodoro', 'WC'], 
     'brasier':['brasier', 'chichero']  
 }
 
 HOME=os.environ["HOME"]
-WD=os.getcwd()
+WD=os.path.join(HOME,"repos/dialectic-twitter-maps-generator")
 DATA_DIR=os.path.join(WD,"data")
 OUT_DIR=os.path.join(WD,"outputs")
 print(OUT_DIR)
@@ -39,7 +40,7 @@ def dictsum(dic2: dict, dic1 :dict) -> dict:
     return {key: dic1.get(key, 0) + dic2.get(key, 0) for key in set(dic1) | set(dic2)}
 
 def get_location_data(file) -> dict:
-    df = pd.read_csv(file,dtype={"Estado": str,"Poblacion": int,})
+    df = pd.read_csv(file,dtype={"Estado": str,"Poblacion": str,})
     apariciones=dict.fromkeys(estados,0)
     total=len(list(df["Estado"]))
     apariciones['Total']=total
